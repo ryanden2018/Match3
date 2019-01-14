@@ -3,8 +3,7 @@
  * Files: Match3.java, Board.java
  *
  * A simple Swing-based game in which the user needs to
- * swap pieces in order to create three in a row (structurally
- * similar to Bejeweled or Candy Crush).
+ * swap pieces in order to create three in a row.
  */
 
 import java.awt.*;
