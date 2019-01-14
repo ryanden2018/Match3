@@ -132,5 +132,50 @@ class Board
             }
         }
     }
+
+
+    // check whether the given swap is valid.
+    // returns False if there is already some match on the board (this
+    // should never happen in normal gameplay though).
+    public boolean isValidSwap(int row1,int col1,int row2,int col2) {
+        if(row1==row2 && Math.abs(col1-col2)==1) {
+            // ok
+        } else if (col1==col2 && Math.abs(row1-row2)==1) {
+            // ok
+        } else {
+            return false;
+        }
+
+        Board toyboard = new Board(this);
+        
+        toyboard.eliminateMatches();
+        if(toyboard.existsEmptyCell()) {
+            return false;
+        }
+
+        int tmp = toyboard.board[row1][col1];
+        toyboard.board[row1][col1] = toyboard.board[row2][col2];
+        toyboard.board[row2][col2] = tmp;
+        toyboard.eliminateMatches();
+        if(toyboard.existsEmptyCell()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    // swap the given pieces, then call eliminateMatches() and then dropPieces()
+    // until no matches exist
+    public void makeSwap(int row1,int col1,int row2,int col2) {
+        int tmp = board[row1][col1];
+        board[row1][col1] = board[row2][col2];
+        board[row2][col2] = tmp;
+
+        do {
+            dropPieces();
+            eliminateMatches();
+        } while(existsEmptyCell());
+    }
 }
 

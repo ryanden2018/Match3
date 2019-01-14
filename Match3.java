@@ -19,6 +19,9 @@ class Match3 implements ActionListener
     Board gameboard;
     final int numrows = 10;
     final int numcols = 6;
+    boolean pieceSelected = false;
+    int selectedRow = -1;
+    int selectedCol = -1;
     JButton boardButtons[][];
     JLabel statusBar;
     JButton resetButton;
@@ -26,6 +29,9 @@ class Match3 implements ActionListener
     JPanel buttonBar;
     JPanel boardPanel;
     JFrame jfrm;
+    final Color DESELECTED_COLOR = Color.LIGHT_GRAY;
+    final Color SELECTED_COLOR = Color.YELLOW;
+    int points = 0;
 
     // construct the game board
     Match3() {
@@ -36,9 +42,9 @@ class Match3 implements ActionListener
         buttonBar = new JPanel(new FlowLayout());
         resetButton = new JButton("Reset Board");
         quitButton = new JButton("Exit");
-        boardPanel = new JPanel(new GridLayout(numrows,numcols));
-        statusBar = new JLabel(" ");
-        jfrm = new JFrame();
+        boardPanel = new JPanel(new GridLayout(numrows,numcols,3,3));
+        statusBar = new JLabel("Points: " + String.valueOf(points));
+        jfrm = new JFrame("Match3");
         
         for(int i=0;i<numrows;i++) {
             for(int j=0;j<numcols;j++) {
@@ -48,6 +54,9 @@ class Match3 implements ActionListener
                     String.valueOf(i) + " " + String.valueOf(j));
                 boardButtons[i][j].addActionListener(this);
                 boardPanel.add(boardButtons[i][j]);
+                boardButtons[i][j].setBackground(DESELECTED_COLOR);
+                boardButtons[i][j].setOpaque(true);
+                boardButtons[i][j].setBorderPainted(false);
             }
         }
 
@@ -69,6 +78,9 @@ class Match3 implements ActionListener
 
     // reset the board to a random state
     public void reset() {
+        gameboard.resetBoard();
+        points = 0;
+        setStatus("Points: " + String.valueOf(points));
         while(gameboard.existsEmptyCell()) {
             gameboard.dropPieces();
             gameboard.eliminateMatches();
@@ -83,14 +95,54 @@ class Match3 implements ActionListener
 
     // handle button presses
     public void actionPerformed(ActionEvent e) {
+        setStatus("Points: " + String.valueOf(points));
         switch(e.getActionCommand()) {
             case "Exit":
                 System.exit(0);
             case "Reset Board":
+                reset();
                 break;
             default: // board piece
+                String[] cmd = e.getActionCommand().split(" ");
+                int cmdrow = Integer.parseInt(cmd[0]);
+                int cmdcol = Integer.parseInt(cmd[1]);
+                handleClick(cmdrow,cmdcol);
                 break;
         }
+    }
+
+    // handle a click event at (row,col)
+    public void handleClick(int row,int col) {
+        if(!pieceSelected) {
+            pieceSelected = true;
+            selectedRow = row;
+            selectedCol = col;
+            boardButtons[row][col].setBackground(SELECTED_COLOR);
+            return;
+        }
+
+        if(pieceSelected && selectedRow==row && selectedCol==col) {
+            pieceSelected = false;
+            selectedRow = -1;
+            selectedCol = -1;
+            boardButtons[row][col].setBackground(DESELECTED_COLOR);
+            return;
+        }
+
+        // if we get here, then a piece is selected and it is not the
+        // newly clicked piece
+        if(!(gameboard.isValidSwap(row,col,selectedRow,selectedCol))) {
+            setStatus("Invalid move");
+            return;
+        }
+        points++;
+        gameboard.makeSwap(row,col,selectedRow,selectedCol);
+        boardButtons[selectedRow][selectedCol].setBackground(DESELECTED_COLOR);
+        pieceSelected = false;
+        selectedRow = -1;
+        selectedCol = -1;
+        redrawBoard();
+        setStatus("Points: " + String.valueOf(points));
     }
 
     // re-draw the board from underlying game data
