@@ -42,7 +42,7 @@ class Match3 implements ActionListener
         
         for(int i=0;i<numrows;i++) {
             for(int j=0;j<numcols;j++) {
-                boardButtons[i][j] = new JButton(" ");
+                boardButtons[i][j] = new JButton(Board.CELL_LABELS[Board.CELL_EMPTY]);
                 boardButtons[i][j].setFont(new Font("Monospaced",Font.PLAIN,20));
                 boardButtons[i][j].setActionCommand(
                     String.valueOf(i) + " " + String.valueOf(j));
@@ -63,6 +63,17 @@ class Match3 implements ActionListener
         jfrm.setSize(500,500);
         jfrm.setResizable(false);
         jfrm.setVisible(true);
+
+        reset();
+    }
+
+    // reset the board to a random state
+    public void reset() {
+        while(gameboard.existsEmptyCell()) {
+            gameboard.dropPieces();
+            gameboard.eliminateMatches();
+        }
+        redrawBoard();
     }
 
     // change the status bar text
@@ -79,6 +90,16 @@ class Match3 implements ActionListener
                 break;
             default: // board piece
                 break;
+        }
+    }
+
+    // re-draw the board from underlying game data
+    public void redrawBoard() {
+        for(int i=0; i<numrows; i++) {
+            for(int j=0; j<numcols; j++) {
+                boardButtons[i][j].setText(
+                   Board.CELL_LABELS[ gameboard.getValueAt(i,j) ]);
+            }
         }
     }
 
